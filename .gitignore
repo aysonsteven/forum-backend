@@ -1,0 +1,7 @@
+*.db
+*.db-journal
+var/db/*.php
+*.log
+.idea
+*.swp
+*.cgi
