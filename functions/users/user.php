@@ -8,25 +8,13 @@ class User extends Entity {
         $this->setTable( 'user' );
         $this->setSearchableFields('idx,id,email');
     }
-    /**
-     *
-     * @code
-     *      http://work.org/xbase/?mc=user.fetch
-     * @endcode
-     *
-     */
+
     public function fetch() {
         $users = db()->get_results( "SELECT * FROM user", ARRAY_A);
         json_success( $users );
     }
 
-    /**
-     *
-     * Get user create/update data from HTTP Query or STDIN
-     * @attention it exists if there is any error.
-     * @return array
-     * @see user/user_crud_test::validate()
-     */
+
     public function getRequestedUserData() {
 
         $user = [];
@@ -38,18 +26,7 @@ class User extends Entity {
 
     }
 
-    /**
-     *
-     *
-     * @note if $edit is true, then it does for user profile edit.
-     *
-     * @note This method changes the value of '$user'
-     *
-     * @param $user
-     * @return bool|string - false on success
-     * - false on success
-     * - string of Error Message on failure.
-     */
+
     public function validate_user_data( &$user, $edit = false ) {
 
         $create = ! $edit;
@@ -107,13 +84,7 @@ class User extends Entity {
 
         return false;
     }
-    /**
-     * Register the user based on the REQUESTED DATA
-     *
-     * @return void
-     *      - json_success with token id on success.
-     *      - json_error on failure
-     */
+
     public function register() {
 
         $user_idx = $this->create( $this->getRequestedUserData() );
@@ -124,20 +95,7 @@ class User extends Entity {
     }
 
 
-    /**
-     * Create a user record on database.
-     *
-     * @note This method does not interact with USER INPUT directly.
-     *
-     *
-     * @param $user
-     * @return mixed
-     *      - user.idx on success
-     *      - Error message as string on failure.
-     *
-     * @note this method may 'exit()' if there is database query error.
-     *
-     */
+
     public function create( $user ) {
 
         if ( $error = $this->validate_user_data( $user ) ) return $error;
@@ -152,17 +110,7 @@ class User extends Entity {
     }
 
 
-    /**
-     * Register the user based on the REQUESTED DATA
-     *
-     * @Attention use this method to access through HTTP and CLI
-     *
-     * @Warning when you edit profile, session_id will be re-newed.
-     *
-     * @return void
-     *      - json_success with new session_id(token id) on success.
-     *      - json_error on failure
-     */
+
     public function edit() {
         if ( $error = $this->update( $this->getRequestedUserData() ) ) json_error( -50040, $error );
         else {
@@ -173,18 +121,49 @@ class User extends Entity {
     }
 
 
-    /**
-     * Update user information
-     * @Warning this is only called pragmatically
-     * @param $user
-     * @return boolean|string
-     *
-     *      - string of error message on failure
-     *      - false on success
-     *
-     * @Attention it only updates login users info.
-     *
-     */
+    public function upload(){
+   
+            $file = $_FILES['photo'];
+            
+            //
+            $file_name = $file['name'];
+            $file_tmp = $file['tmp_name'];
+            $file_size = $file['size'];
+            $file_error = $file['error'];
+
+            //
+            $file_ext = explode('.', $file_name);
+            $file_ext = strtolower(end($file_ext));
+
+            $allowed = array('txt', 'jpg', 'png');
+            
+            if(in_array($file_ext, $allowed)){
+                if($file_error === 0){
+                    if($file_size <= 2087152){
+
+                        $file_name_new = uniqid('', true) . '.' . $file_ext;
+                        $folder = str_replace('.jpg','',$file_name);
+                        
+                        $structure = './uploads/' . $folder;
+
+                        if (!file_exists($structure)) {
+                            if (!mkdir($structure, 0777, true)) {
+                                echo('folder is already created before');
+                            }
+                            
+                        }
+                        
+                        $file_destination = 'uploads/' . $folder . '/' . $file_name_new;
+
+                        if(move_uploaded_file($file_tmp, $file_destination)){
+                            echo $file_destination;
+                        }
+                    }
+                }
+            }
+        
+    }
+
     public function update( $user ) {
         if ( $error = $this->validate_user_data($user, true) ) return $error;
         $user['updated'] = time();
@@ -194,36 +173,14 @@ class User extends Entity {
     }
 
 
-    /**
-     * Returns the user record.
-     *
-     * @param $idx - user.idx or user.id
-     * @return array|null
-     */
-    /*
-    public function get( $idx ) {
-        if ( is_numeric( $idx ) ) return db()->get_row( "SELECT * FROM user WHERE idx=$idx", ARRAY_A);
-        else {
-            $id = db()->escape( $idx );
-            return db()->get_row( "SELECT * FROM user WHERE id='$id'", ARRAY_A);
-        }
-    }
-    */
+
 
     public function getByEmail ( $email ) {
         $email = db()->escape( $email );
         return db()->get_row( "SELECT * FROM user WHERE email='$email'", ARRAY_A );
     }
 
-    /**
-     *
-     *
-     * Echo JSON data based on user()->getSessionID()
-     *
-     * @note parameter may be invoked by REQUEST QUERY
-     * @param $id
-     * @param $password
-     */
+
     public function login($id=null, $password=null)
     {
         if ( empty($id) ) $id = in('id');
@@ -234,21 +191,6 @@ class User extends Entity {
     }
 
 
-
-    /**
-     * Returns user login token.
-     * @note
-     *      - When you know id and password, use this method.
-     *      - When you do not know id and password, but you got the user record, then use get_session_id()
-     * @note with login token, user can authenticate himself.
-     * @warning if you need security, you should use SSL ( https:// )
-     * @param $id
-     * @param $password
-     * @return mixed
-     *      - string of token on success
-     *      - hash array of error code and error message on failure.
-     *
-     */
     public function getSessionID( $id, $password ) {
         if ( $error = validate_id( $id ) ) return error( -20075, $error );
         $user = $this->get( $id );
@@ -257,11 +199,7 @@ class User extends Entity {
         return get_session_id( $user['idx'] );
     }
 
-    /**
-     * @Attention it gets 'field' through 'parameter' and 'QUERY REQUEST'
-     *
-     * @param null $field
-     */
+
     public function my( $field = null ) {
         if ( ! login() ) json_error('not-logged-in');
 

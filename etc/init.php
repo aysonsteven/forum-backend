@@ -10,7 +10,7 @@ dog("new access : " . date('r'));
 /**
  * --------------------- Database Connection -----------------------------
  */
-$_sqlite_db = new Database('./var/db/','forum.sqlite');
+$_sqlite_db = new Database('./database/','forum.sqlite');
 $_sqlite_db->query("CREATE TABLE IF NOT EXISTS user ( id TEXT , idx INTEGER PRIMARY KEY ,  password TEXT(32), email VARCHAR, photo VARCHAR, created INTEGER, updated INTEGER );");
 // $_sqlite_db->query("CREATE TABLE IF NOT EXISTS questions ( idx INTEGER PRIMARY KEY , question TEXT , choice1 VARCHAR ,  choice2 VARCHAR, choice3 VARCHAR, choice4 VARCHAR, answer INTEGER(1), user_id VARCHAR, timer VARCHAR, created VARCHAR, updated VARCHAR );");
 $_sqlite_db->hide_errors();
