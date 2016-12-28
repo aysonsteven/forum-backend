@@ -103,9 +103,12 @@ class User extends Entity {
 
         $user['created'] = time();
         // $user['updated'] = time();
-
+        if( !in('gender')) return 'no gender';
+        if( !in('age')) return 'no age';
         if ( in('photo') ) $user['photo'] = in('photo');
-
+        $user['gender'] = in('gender');
+        $user['age'] = in('age');
+        
         $idx = db()->insert( 'user',  $user );
         if ( is_numeric($idx) ) return $idx;
         return 'real_register() failed';
@@ -200,8 +203,8 @@ class User extends Entity {
     public function getSessionID( $id, $password ) {
         if ( $error = validate_id( $id ) ) return error( -20075, $error );
         $user = $this->get( $id );
-        if ( empty($user) ) return error(-20070, 'user-not-exist');
-        if ( $user['password'] != encrypt_password( $password ) ) return error( -20071, 'wrong-password');
+        if ( empty($user) ) return error(-20070, 'user does not exist');
+        if ( $user['password'] != encrypt_password( $password ) ) return error( -20071, 'incorrect password');
         return get_session_id( $user['idx'] );
     }
 
