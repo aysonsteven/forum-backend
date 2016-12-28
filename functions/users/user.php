@@ -103,7 +103,9 @@ class User extends Entity {
 
         $user['created'] = time();
         // $user['updated'] = time();
+
         if ( in('photo') ) $user['photo'] = in('photo');
+
         $idx = db()->insert( 'user',  $user );
         if ( is_numeric($idx) ) return $idx;
         return 'real_register() failed';
@@ -113,6 +115,7 @@ class User extends Entity {
 
     public function edit() {
         if ( $error = $this->update( $this->getRequestedUserData() ) ) json_error( -50040, $error );
+        if ( in('photo') ) $user['photo'] = in('photo');
         else {
             $session_id = get_session_id( my('idx') );
             // dog("session_id: " . $session_id);
@@ -123,7 +126,7 @@ class User extends Entity {
 
     public function upload(){
    
-            $file = $_FILES['photo'];
+            $file = $_FILES['file'];
             
             //
             $file_name = $file['name'];
@@ -135,7 +138,7 @@ class User extends Entity {
             $file_ext = explode('.', $file_name);
             $file_ext = strtolower(end($file_ext));
 
-            $allowed = array('txt', 'jpg', 'png');
+            $allowed = array('jpg', 'png');
             
             if(in_array($file_ext, $allowed)){
                 if($file_error === 0){
