@@ -125,9 +125,8 @@ class User extends Entity {
 
 
     public function upload(){
-   
+
             $file = $_FILES['file'];
-            
             //
             $file_name = $file['name'];
             $file_tmp = $file['tmp_name'];
@@ -146,8 +145,12 @@ class User extends Entity {
 
                         $file_name_new = uniqid('', true) . '.' . $file_ext;
                         $folder = str_replace('.jpg','',$file_name);
-                        
-                        $structure = './uploads/' . $folder;
+                        if( !file_exists('./photos') ) {
+                            if (!mkdir('./photos', 0777, true)) {
+                                echo('folder is already created before');
+                            }
+                        }
+                        $structure = './photos/' . $folder;
 
                         if (!file_exists($structure)) {
                             if (!mkdir($structure, 0777, true)) {
@@ -156,7 +159,7 @@ class User extends Entity {
                             
                         }
                         
-                        $file_destination = 'uploads/' . $folder . '/' . $file_name_new;
+                        $file_destination = 'photos/' . $folder . '/' . $file_name_new;
 
                         if(move_uploaded_file($file_tmp, $file_destination)){
                             echo $file_destination;
