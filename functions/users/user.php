@@ -129,14 +129,20 @@ class User extends Entity {
 
     public function upload(){
 
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        echo json_encode(array('status' => false));
+        exit;
+        }
+        if( isset($_FILES['file'])){
             $file = $_FILES['file'];
-            //
+            
+            //getting file properties.
             $file_name = $file['name'];
             $file_tmp = $file['tmp_name'];
             $file_size = $file['size'];
             $file_error = $file['error'];
 
-            //
+            //preparing file extension
             $file_ext = explode('.', $file_name);
             $file_ext = strtolower(end($file_ext));
 
@@ -147,7 +153,10 @@ class User extends Entity {
                     if($file_size <= 2087152){
 
                         $file_name_new = uniqid('', true) . '.' . $file_ext;
-                        $folder = str_replace('.jpg','',$file_name);
+
+
+                        ////creating new directory based from the original name of the file.
+                        $folder = str_replace($file_ext,'',$file_name);
                         if( !file_exists('./photos') ) {
                             if (!mkdir('./photos', 0777, true)) {
                                 echo('folder is already created before');
@@ -165,12 +174,21 @@ class User extends Entity {
                         $file_destination = 'photos/' . $folder . '/' . $file_name_new;
 
                         if(move_uploaded_file($file_tmp, $file_destination)){
-                            echo $file_destination;
+                            json_success(array(
+                                'status'        => true,
+                                'originalName'  => $folder,
+                                'generatedName' => $file_name_new
+                            ));
+                        }else{
+                            json_error(
+                                array('status' => false, 'msg' => 'No file uploaded.')
+                            );
+                            exit;
                         }
                     }
                 }
             }
-        
+        }        
     }
 
     public function update( $user ) {
