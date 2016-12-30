@@ -49,15 +49,26 @@ class post extends Entity {
      *      - on create(), it checks if 'post_id' exists.
      */
     public function create() {
+        
         $data = $this->getRequestPostData();
         if ( $error = $this->validate_post_data( $data ) ) return $error;
-        $data['user_id'] = my('id');
+        
+        $data['user_id'] = in('user_id');
         $data['created'] = time();
         // $data['updated'] = time();
         $idx = db()->insert('posts', $data);
+        $data['idx'] = $idx;
 
-        if ( $idx ) return $idx;
+        if ( $idx ) return  $data;
         else return error(-40100, 'failed-to-post-create');
+    }
+
+    public function getSessionID( $id, $password ) {
+        if ( $error = validate_id( $id ) ) return error( -20075, $error );
+        $user = $this->get( $id );
+        if ( empty($user) ) return error(-20070, 'user does not exist');
+        if ( $user['password'] != encrypt_password( $password ) ) return error( -20071, 'incorrect password');
+        return substr(get_session_id( $user['idx'] ), 4);
     }
 
     public function fetch() {

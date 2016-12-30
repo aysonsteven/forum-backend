@@ -97,7 +97,7 @@ class User extends Entity {
 
 
     public function create( $user ) {
-
+        $defaultphoto = 'http://work.org/forum-backend/photos/default/58666b98dd4b77.30509952.jpg';
         if ( $error = $this->validate_user_data( $user ) ) return $error;
         $user['password'] = encrypt_password( $user['password'] );
 
@@ -106,6 +106,7 @@ class User extends Entity {
         if( !in('gender')) return 'no gender';
         if( !in('age')) return 'no age';
         if ( in('photo') ) $user['photo'] = in('photo');
+        if(! in( 'photo' ) ) $user['photo'] = $defaultphoto;
         $user['gender'] = in('gender');
         $user['age'] = in('age');
         
@@ -211,9 +212,13 @@ class User extends Entity {
     public function login($id=null, $password=null)
     {
         if ( empty($id) ) $id = in('id');
+        
         if ( empty($password) ) $password = in('password');
-        $re = $this->getSessionID( $id, $password );
-        if ( is_array( $re ) ) json_error( $re );
+        $re['session_id'] = $this->getSessionID( $id, $password );
+        $re['id'] = my('id');
+        $re['profile_picture'] = my('photo');
+        $re['idx'] = my('idx');
+        if ( is_array( $re ) ) json_success( $re );
         else json_success( $re );
     }
 
@@ -223,7 +228,7 @@ class User extends Entity {
         $user = $this->get( $id );
         if ( empty($user) ) return error(-20070, 'user does not exist');
         if ( $user['password'] != encrypt_password( $password ) ) return error( -20071, 'incorrect password');
-        return get_session_id( $user['idx'] );
+        return substr(get_session_id( $user['idx'] ), 4);
     }
 
 
