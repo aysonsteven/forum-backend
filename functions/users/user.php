@@ -111,7 +111,8 @@ class User extends Entity {
         $user['age'] = in('age');
         
         $idx = db()->insert( 'user',  $user );
-        if ( is_numeric($idx) ) return $idx;
+        $user['idx'] = $idx;
+        if ( is_numeric($idx) ) json_success($user);
         return 'real_register() failed';
     }
 
@@ -211,15 +212,16 @@ class User extends Entity {
 
     public function login($id=null, $password=null)
     {
+        $user = $this->get( $id );
         if ( empty($id) ) $id = in('id');
         
         if ( empty($password) ) $password = in('password');
         $re['session_id'] = $this->getSessionID( $id, $password );
-        $re['id'] = my('id');
-        $re['profile_picture'] = my('photo');
-        $re['idx'] = my('idx');
+        $re['id'] = $user['id'];
+        $re['profile_picture'] = $user['photo'];
+        $re['idx'] = $user['idx'];
         if ( is_array( $re ) ) json_success( $re );
-        else json_success( $re );
+        else json_success( $user );
     }
 
 
@@ -265,7 +267,7 @@ class User extends Entity {
      */
     public function get( $idx = null, $fields = '*', $field = null ) {
         if ( $idx === null ) {
-            $_REQUEST['fields'] = "idx, id, email, created, name, nickname, country, province, city";
+            $_REQUEST['fields'] = "idx, id, photo";
             parent::get();
         }
         return parent::get( $idx, $fields );
