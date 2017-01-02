@@ -13,6 +13,7 @@ dog("new access : " . date('r'));
 $_sqlite_db = new Database('./database/','forum.sqlite');
 $_sqlite_db->query("CREATE TABLE IF NOT EXISTS user ( id TEXT , idx INTEGER PRIMARY KEY ,  password TEXT(32), email VARCHAR, gender TEXT, age INTEGER, photo VARCHAR, created INTEGER, updated INTEGER );");
 $_sqlite_db->query("CREATE TABLE IF NOT EXISTS posts ( idx INTEGER PRIMARY KEY , post TEXT , user_id VARCHAR, created VARCHAR, updated VARCHAR );");
+$_sqlite_db->query("CREATE TABLE IF NOT EXISTS comments ( idx INTEGER PRIMARY KEY, parent_idx INTEGER , comment TEXT , user_id VARCHAR, created VARCHAR, updated VARCHAR );");
 $_sqlite_db->hide_errors();
 function db() {
     global $_sqlite_db;

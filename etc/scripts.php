@@ -8,4 +8,4 @@ include_once "functions/index/index.php";
 include_once "class.entity.php";
 include_once "functions/users/user.php";
 include_once "functions/post/post.php";
-
+include_once "functions/post/comment.php";

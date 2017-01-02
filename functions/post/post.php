@@ -127,7 +127,7 @@ class post extends Entity {
         
 
 
-        $names = [ 'idx', 'id', 'password', 'post',
+        $names = [ 'idx', 'user_id', 'password', 'post',
             'email'
         ];
 
