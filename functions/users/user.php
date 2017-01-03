@@ -6,7 +6,7 @@ class User extends Entity {
     {
         parent::__construct();
         $this->setTable( 'user' );
-        $this->setSearchableFields('idx,id,email');
+        $this->setSearchableFields('idx,id,email, age');
     }
 
     public function fetch() {
@@ -18,9 +18,11 @@ class User extends Entity {
     public function getRequestedUserData() {
 
         $user = [];
+        if ( in('idx') ) $user['idx'] = in('idx');
         if ( in('id') ) $user['id'] = in('id');
         if ( in('password') ) $user['password'] = in('password');
         if ( in('email') ) $user['email'] = in('email');
+        if ( in('age') ) $user['age'] = in('age');
 
         return $user;
 
@@ -120,9 +122,8 @@ class User extends Entity {
 
     public function edit() {
         if ( $error = $this->update( $this->getRequestedUserData() ) ) json_error( -50040, $error );
-        if ( in('photo') ) $user['photo'] = in('photo');
         else {
-            $session_id = get_session_id( my('idx') );
+            $session_id = get_session_id( in('idx') );
             // dog("session_id: " . $session_id);
             json_success( $session_id );
         }
@@ -194,10 +195,9 @@ class User extends Entity {
     }
 
     public function update( $user ) {
-        if ( $error = $this->validate_user_data($user, true) ) return $error;
         $user['updated'] = time();
         if ( isset($user['password']) ) $user['password'] = encrypt_password( $user['password'] );
-        db()->update( 'user', $user, "idx='" . my('idx') . "'" );
+        db()->update( 'user', $user, "idx='" . $user['idx'] . "'" );
         return false;
     }
 
@@ -220,6 +220,9 @@ class User extends Entity {
         $re['id'] = $user['id'];
         $re['profile_picture'] = $user['photo'];
         $re['idx'] = $user['idx'];
+        $re['age'] = $user['age'];
+        $re['email'] = $user['email'];
+        $re['gender'] = $user['gender'];
         if ( is_array( $re ) ) json_success( $re );
         else json_success( $user );
     }
@@ -267,7 +270,7 @@ class User extends Entity {
      */
     public function get( $idx = null, $fields = '*', $field = null ) {
         if ( $idx === null ) {
-            $_REQUEST['fields'] = "idx, id, photo";
+            $_REQUEST['fields'] = "idx, id, photo, age, email, gender";
             parent::get();
         }
         return parent::get( $idx, $fields );

@@ -9,3 +9,5 @@ include_once "class.entity.php";
 include_once "functions/users/user.php";
 include_once "functions/post/post.php";
 include_once "functions/post/comment.php";
+include_once "functions/message/message.php";
+

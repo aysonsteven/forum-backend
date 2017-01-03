@@ -18,10 +18,10 @@ class comment extends Entity{
 
     public function create()
     {
-        $data = $this->getRequestPostData();
-        if ( $error = $this->validate_post_data( $data ) ) return $error;
+        $data = $this->getRequestCommentData();
+        if ( $error = $this->validate_comment_data( $data ) ) return $error;
         $data['parent_idx'] = in('parent_idx');
-        $data['user_id'] = in('user_id');
+        $data['user_id'] = in('userid');
         $data['created'] = time();
         // $data['updated'] = time();
         $idx = db()->insert('comments', $data);
@@ -37,16 +37,25 @@ class comment extends Entity{
         json_success( $users );
     }
 
+    private function update()
+    {
+        $data = $this->getRequestCommentData();
+        if ( $error = $this->validate_comment_data( $data ) ) return $error;
+        $data['user_id'] = in('userid'); // for admin edit.
+        $data['updated'] = time();
+        if ( ! isset($data['idx']) ) return error( -40564, 'input-idx');
+        $post = $this->get( $data['idx'] );
 
-    private function getRequestPostData()
+        // if ( $error = $this->checkPermission( $post, $data['password'] ) ) return $error;
+        db()->update( $this->getTable(), $data, "idx=$data[idx]");
+        
+        return $data;
+    }
+
+
+    private function getRequestCommentData()
     {
         $data = [];
-        // if ( in('choice1') ) $data['choice1'] = in('choice1');
-        // if ( in('choice2') ) $data['choice2'] = in('choice2');
-        // if ( in('choice3') ) $data['choice3'] = in('choice3');
-        // if ( in('choice4') ) $data['choice4'] = in('choice4');
-        // if ( in('answer') ) $data['answer'] = in('answer');
-        // if ( in('timer') ) $data['timer'] = in('timer');
         
 
 
@@ -65,7 +74,7 @@ class comment extends Entity{
 
 
 
-    public function validate_post_data( $data, $edit = false ) {
+    public function validate_comment_data( $data, $edit = false ) {
         $create = ! $edit;
         if ( $create ) {
             if ( empty( $data['comment'] ) ) return error( -40200, 'input post');
@@ -90,6 +99,12 @@ class comment extends Entity{
         if ( $re === false ) json_success();
         else json_error( -40223, "post-delete-failed");
     }
+
+    public function edit() {
+        json( $this->update() );
+    }
+
+
 
 
     private function checkPermission( $post, $password ) {

@@ -27,12 +27,7 @@ class post extends Entity {
         json( $this->update() );
     }
 
-    /**
-     * Checks if the user has permission on the post.
-     *
-     * @example request - http://w8.philgo.com/etc/xbase/index.php?idx=1099&password=123456&mc=post.permission
-     *
-     */
+
     public function permission() {
         $post = $this->get( in('idx') );
         json( $this->checkPermission( $post, in('password')) );
@@ -118,15 +113,7 @@ class post extends Entity {
     private function getRequestPostData()
     {
         $data = [];
-        // if ( in('choice1') ) $data['choice1'] = in('choice1');
-        // if ( in('choice2') ) $data['choice2'] = in('choice2');
-        // if ( in('choice3') ) $data['choice3'] = in('choice3');
-        // if ( in('choice4') ) $data['choice4'] = in('choice4');
-        // if ( in('answer') ) $data['answer'] = in('answer');
-        // if ( in('timer') ) $data['timer'] = in('timer');
         
-
-
         $names = [ 'idx', 'user_id', 'password', 'post',
             'email'
         ];
@@ -153,6 +140,72 @@ class post extends Entity {
         if ( $re === false ) json_success();
         else json_error( -40223, "post-delete-failed");
     }
+
+    public function upload(){
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        echo json_encode(array('status' => false));
+        exit;
+        }
+        if( isset($_FILES['file'])){
+            $file = $_FILES['file'];
+            
+            //getting file properties.
+            $file_name = $file['name'];
+            $file_tmp = $file['tmp_name'];
+            $file_size = $file['size'];
+            $file_error = $file['error'];
+
+            //preparing file extension
+            $file_ext = explode('.', $file_name);
+            $file_ext = strtolower(end($file_ext));
+
+            $allowed = array('jpg', 'png');
+            
+            if(in_array($file_ext, $allowed)){
+                if($file_error === 0){
+                    if($file_size <= 2087152){
+
+                        $file_name_new = uniqid('', true) . '.' . $file_ext;
+
+
+                        ////creating new directory based from the original name of the file.
+                        $folder = str_replace($file_ext,'',$file_name);
+                        if( !file_exists('./photos') ) {
+                            if (!mkdir('./photos', 0777, true)) {
+                                echo('folder is already created before');
+                            }
+                        }
+                        $structure = './photos/' . $folder;
+
+                        if (!file_exists($structure)) {
+                            if (!mkdir($structure, 0777, true)) {
+                                echo('folder is already created before');
+                            }
+                            
+                        }
+                        
+                        $file_destination = 'photos/' . $folder . '/' . $file_name_new;
+
+                        if(move_uploaded_file($file_tmp, $file_destination)){
+                            json_success(array(
+                                'status'        => true,
+                                'originalName'  => $folder,
+                                'generatedName' => $file_name_new
+                            ));
+                        }else{
+                            json_error(
+                                array('status' => false, 'msg' => 'No file uploaded.')
+                            );
+                            exit;
+                        }
+                    }
+                }
+            }
+        }        
+    }
+
+
 
 }
 
