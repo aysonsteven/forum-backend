@@ -75,15 +75,15 @@ class post extends Entity {
     {
         $data = $this->getRequestPostData();
         if ( $error = $this->validate_post_data( $data, true ) ) return $error;
-        $data['user_id'] = my('id'); // for admin edit.
+        $data['user_id'] = in('userid'); 
         $data['updated'] = time();
         if ( ! isset($data['idx']) ) return error( -40564, 'input-idx');
         $post = $this->get( $data['idx'] );
 
-        if ( $error = $this->checkPermission( $post, $data['password'] ) ) return $error;
+        // if ( $error = $this->checkPermission( $post, $data['password'] ) ) return $error;
         db()->update( $this->getTable(), $data, "idx=$data[idx]");
 
-        return false;
+        return $data;
     }
 
 

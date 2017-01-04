@@ -30,6 +30,19 @@
         }
 
 
+    private function checkPermission( $post, $password ) {
+	if ( empty($post) ) return error( -40568, 'post-not-exist' );
+	$password = encrypt_password( $password );
+        if ( isset( $password ) && $password ) {
+            // if ( $password == $post['password'] ) return false; // success. permission granted.
+            // else return error( -40564, 'wrong-password' );
+        }
+        // else if ( $post['user_id'] == 'anonymous' ) return error( -40565, 'login-or-input-password' );
+        // else if ( $post['user_id'] != my('id') ) return error( -40567, 'not-your-post' );
+        return false; // success. this is your post. permission granted.
+    }
+
+
     public function validate_message_data( $data, $edit = false ) {
         $create = ! $edit;
         if ( $create ) {
@@ -39,6 +52,26 @@
             if ( isset( $data['idx'] ) && empty( $data['idx'] ) ) return error( -40204, 'input idx');
         }
         return false;
+    }
+
+
+
+    public function delete( $idx = null ) {
+        if ( in('mc') ) {
+            $idx = in('idx');
+            if ( empty($idx) ) json_error(-40222, "input-idx");
+        }
+
+        $post = $this->get( $idx );
+        if ( $error = $this->checkPermission( $post, in('password') ) ) json_error($error);
+
+        $re = parent::delete( $idx );
+        if ( $re === false ) json_success();
+        else json_error( -40223, "post-delete-failed");
+    }
+
+    public function edit() {
+        json( $this->update() );
     }
 
 

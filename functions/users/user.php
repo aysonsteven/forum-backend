@@ -6,7 +6,7 @@ class User extends Entity {
     {
         parent::__construct();
         $this->setTable( 'user' );
-        $this->setSearchableFields('idx,id,email, age');
+        $this->setSearchableFields('idx,id,email, age, gender, photo');
     }
 
     public function fetch() {
@@ -23,6 +23,8 @@ class User extends Entity {
         if ( in('password') ) $user['password'] = in('password');
         if ( in('email') ) $user['email'] = in('email');
         if ( in('age') ) $user['age'] = in('age');
+        if ( in('gender') ) $user['gender'] = in('gender');
+        if( in ('photo') ) $user['photo'] = in('photo');
 
         return $user;
 
@@ -132,10 +134,10 @@ class User extends Entity {
 
     public function upload(){
 
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        echo json_encode(array('status' => false));
-        exit;
-        }
+        // if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        // echo json_encode(array('status' => false));
+        // exit;
+        // }
         if( isset($_FILES['file'])){
             $file = $_FILES['file'];
             
@@ -180,7 +182,8 @@ class User extends Entity {
                             json_success(array(
                                 'status'        => true,
                                 'originalName'  => $folder,
-                                'generatedName' => $file_name_new
+                                'generatedName' => $file_name_new,
+                                'url'          => $file_destination
                             ));
                         }else{
                             json_error(
@@ -217,14 +220,10 @@ class User extends Entity {
         
         if ( empty($password) ) $password = in('password');
         $re['session_id'] = $this->getSessionID( $id, $password );
-        $re['id'] = $user['id'];
-        $re['profile_picture'] = $user['photo'];
-        $re['idx'] = $user['idx'];
-        $re['age'] = $user['age'];
-        $re['email'] = $user['email'];
-        $re['gender'] = $user['gender'];
+
+
         if ( is_array( $re ) ) json_success( $re );
-        else json_success( $user );
+        else json_success( $re );
     }
 
 
